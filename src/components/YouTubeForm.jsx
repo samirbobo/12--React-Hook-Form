@@ -1,5 +1,6 @@
 import { useFieldArray, useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
+import { Fragment } from "react";
 
 export default function YouTubeForm() {
   const form = useForm({
@@ -13,10 +14,12 @@ export default function YouTubeForm() {
       },
       phoneNumbers: ["", ""],
       phNumbers: [{ name: "" }],
+      age: 0,
+      dob: new Date(),
     },
   });
-  const { register, control, handleSubmit, formState } = form;
-  const { errors } = formState;
+  const { register, control, handleSubmit, formState, getValues, watch } = form;
+  const { errors, dirtyFields, touchedFields, isDirty } = formState;
 
   const { fields, append, remove } = useFieldArray({
     name: "phNumbers",
@@ -26,6 +29,12 @@ export default function YouTubeForm() {
   const onSubmit = (data) => {
     console.log("Form Submitted", data);
   };
+
+  const handleGetValues = () => {
+    console.log("get Values", getValues());
+  };
+
+  console.log({ dirtyFields, touchedFields }, isDirty);
 
   return (
     <div>
@@ -87,7 +96,16 @@ export default function YouTubeForm() {
         <div className="form-control">
           <label htmlFor="twitter">Twitter:</label>
           {/* social.twitter دا شكل تعريف اسم الانبوت وربطه بي مكتبه رياكت هوك فورم في حاله لم يكون علي شكل اوبجيكت */}
-          <input type="text" id="twitter" {...register("social.twitter")} />
+          <input
+            type="text"
+            id="twitter"
+            {...register("social.twitter", {
+              required: "twitter is required",
+              // من الممكن جعل الانبوت غير قابل للكتابه بالامر ديسابلد ونخليها صح وممكن نخليها مشروطه بقيمه انبوت تاني
+              // وفانكشن واتش بتجيب لينا القيمه بتاعتها
+              disabled: watch("channel") === "",
+            })}
+          />
         </div>
 
         <div className="form-control">
@@ -95,7 +113,7 @@ export default function YouTubeForm() {
           <input type="text" id="facebook" {...register("social.facebook")} />
         </div>
 
-        {/* social.twitter دا شكل تعريف اسم الانبوت وربطه بي مكتبه رياكت هوك فورم في حاله لم يكون علي شكل مصفوفه */}
+        {/* phoneNumbers.0 دا شكل تعريف اسم الانبوت وربطه بي مكتبه رياكت هوك فورم في حاله لم يكون علي شكل مصفوفه */}
         <div className="form-control">
           <label htmlFor="phone_one">phone one:</label>
           <input type="text" id="phone_one" {...register("phoneNumbers.0")} />
@@ -107,8 +125,8 @@ export default function YouTubeForm() {
         </div>
 
         {fields.map((field, index) => (
-          <>
-            <div key={index} className="form-control">
+          <Fragment key={index}>
+            <div className="form-control">
               <label htmlFor={`phone_${index}`}>phone {index}:</label>
               <input
                 type="text"
@@ -119,7 +137,7 @@ export default function YouTubeForm() {
             <button type="button" onClick={() => remove(index)}>
               Delete
             </button>
-          </>
+          </Fragment>
         ))}
 
         <button type="button" onClick={() => append({ name: "" })}>
@@ -128,7 +146,37 @@ export default function YouTubeForm() {
         <br />
         <br />
 
+        <div className="form-control">
+          <label htmlFor="age">Age:</label>
+          <input
+            type="number"
+            id="age"
+            {...register("age", {
+              required: "Age is Required",
+              // عشان تحول القيمه العاده من الانبوت من استرانج الي رقم صحيح
+              valueAsNumber: true,
+            })}
+          />
+          <p className="errors">{errors.age?.message}</p>
+        </div>
+
+        <div className="form-control">
+          <label htmlFor="dob">Date of birth:</label>
+          <input
+            type="date"
+            id="dob"
+            {...register("dob", {
+              required: "Date of birth is Required",
+              // عشان تحول القيمه العاده من الانبوت من استرانج الي تاريخ
+              valueAsDate: true,
+            })}
+          />
+          <p className="errors">{errors.dob?.message}</p>
+        </div>
         <button type="submit">Submit</button>
+        <button type="button" onClick={handleGetValues}>
+          Get Values
+        </button>
       </form>
       <DevTool control={control} />
     </div>
