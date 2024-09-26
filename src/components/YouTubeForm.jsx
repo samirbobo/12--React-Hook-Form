@@ -1,6 +1,6 @@
 import { useFieldArray, useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 
 export default function YouTubeForm() {
   const form = useForm({
@@ -18,27 +18,58 @@ export default function YouTubeForm() {
       dob: new Date(),
     },
   });
-  const { register, control, handleSubmit, formState, getValues, watch } = form;
-  const { errors, dirtyFields, touchedFields, isDirty } = formState;
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState,
+    getValues,
+    watch,
+    reset,
+  } = form;
+  const {
+    errors,
+    dirtyFields,
+    touchedFields,
+    isDirty,
+    isValid,
+    isSubmitting,
+    isSubmitted,
+    isSubmitSuccessful,
+    submitCount,
+  } = formState;
 
   const { fields, append, remove } = useFieldArray({
     name: "phNumbers",
     control,
   });
 
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      reset();
+    }
+  }, [isSubmitSuccessful]);
+
   const onSubmit = (data) => {
     console.log("Form Submitted", data);
+  };
+
+  // الفانكشن دي بتخلني اعرض كل الاخطاء الي حصلت في الانبوتس بعد ما عملت سبمت للفورم
+  const onError = (errors) => {
+    console.log("Form errors", errors);
   };
 
   const handleGetValues = () => {
     console.log("get Values", getValues());
   };
 
-  console.log({ dirtyFields, touchedFields }, isDirty);
+  console.log({ isSubmitting, isSubmitted, isSubmitSuccessful, submitCount });
+
+  // console.log({ dirtyFields, touchedFields , isDirty, isValid});
 
   return (
     <div>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onError)}>
         <div className="form-control">
           <label htmlFor="userName">UserName:</label>
           <input
@@ -173,9 +204,14 @@ export default function YouTubeForm() {
           />
           <p className="errors">{errors.dob?.message}</p>
         </div>
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={!isDirty || !isValid || isSubmitting}>
+          Submit
+        </button>
         <button type="button" onClick={handleGetValues}>
           Get Values
+        </button>
+        <button type="button" onClick={() => reset()}>
+          reset
         </button>
       </form>
       <DevTool control={control} />
