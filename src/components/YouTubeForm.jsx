@@ -17,6 +17,7 @@ export default function YouTubeForm() {
       age: 0,
       dob: new Date(),
     },
+    mode: "onTouched",
   });
   const {
     register,
@@ -105,6 +106,14 @@ export default function YouTubeForm() {
                     !filedValue.endsWith("baddomain.com") ||
                     "This Domain is not supported"
                   );
+                },
+                // لو الايميل كان موجود قبل كده بيظهر ليا ايرور عشان يعرفني بوجوده قبل كده
+                emailAvailable: async (filedValue) => {
+                  const response = await fetch(
+                    `https://jsonplaceholder.typicode.com/users?email=${filedValue}`
+                  );
+                  const data = await response.json();
+                  return data.length === 0 || "Email already Exists";
                 },
               },
             })}
@@ -204,7 +213,7 @@ export default function YouTubeForm() {
           />
           <p className="errors">{errors.dob?.message}</p>
         </div>
-        <button type="submit" disabled={!isDirty || !isValid || isSubmitting}>
+        <button type="submit" disabled={!isDirty || isSubmitting}>
           Submit
         </button>
         <button type="button" onClick={handleGetValues}>
